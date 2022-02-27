@@ -1,0 +1,77 @@
+ <>
+      <Box
+        id="editor"
+        sx={{
+          mb: 10,
+          bgcolor: "background.paper",
+          p: 2,
+          border: 1,
+          borderRadius: 1,
+          borderColor: "divider",
+          color: "white",
+          ".rdw-editor-wrapper .rdw-editor-toolbar": {
+            borderColor: "divider",
+            ".rdw-option-wrapper": {
+              borderColor: "divider",
+
+              bgcolor: "grey.300",
+              // color: "white",
+            },
+            ".rdw-option-active": {
+              borderColor: "divider",
+
+              bgcolor: "grey.700",
+              // color: "white",
+            },
+            ".rdw-dropdown-optionwrapper": {
+              borderColor: "divider",
+              bgcolor: "grey.700",
+              // color: "white",
+            },
+            ".rdw-dropdownoption-active": {
+              bgcolor: "grey.800",
+            },
+            ".rdw-dropdownoption-highlighted": {
+              bgcolor: "grey.800",
+            },
+            ".rdw-dropdown-wrapper": {
+              borderColor: "divider",
+
+              bgcolor: "grey.900",
+              "&:hover": {
+                borderColor: "grey.700",
+              },
+              // color: "white",
+            },
+          },
+        }}
+      >
+        <Editor
+          toolbarStyle={{
+            backgroundColor: "transparent",
+          }}
+          editorStyle={
+            {
+              // backgroundColor: "transparent",
+            }
+          }
+          wrapperStyle={
+            {
+              // backgroundColor: "transparent",
+            }
+          }
+          editorState={editorState}
+          toolbarClassName={styles.toolbar}
+          wrapperClassName={styles.wrapper}
+          editorClassName={styles.editor}
+          onEditorStateChange={setEditorState}
+        />
+      </Box>
+      <Editor
+        editorState={editorState}
+        toolbarClassName={styles.toolbar}
+        wrapperClassName={styles.wrapper}
+        editorClassName={styles.editor}
+        onEditorStateChange={setEditorState}
+      />
+    </>

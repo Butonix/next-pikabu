@@ -1,3 +1,3 @@
 import axios from "axios";
-
-export const api = axios.create({ baseURL: "http://localhost:3000/api" });
+const baseURL = "https://next-pikabu-ccypckvrn-andreineu.vercel.app/";
+export const api = axios.create({ baseURL: baseURL });

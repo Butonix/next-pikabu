@@ -7,7 +7,7 @@ import { CacheProvider, EmotionCache } from "@emotion/react";
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 
 import createEmotionCache from "@utils/createEmotionCache";
-import darkThemeOptions from "styles/theme/darkThemeOptions";
+import darkThemeOptions from "@src/styles/theme/darkThemeOptions";
 
 const clientSideEmotionCache = createEmotionCache();
 const darkTheme = createTheme(darkThemeOptions);

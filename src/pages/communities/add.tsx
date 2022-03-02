@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useSession } from "next-auth/react";
-import Image from "next/image";
 import { NextPage } from "next";
 
 import {
@@ -11,14 +10,23 @@ import {
   OutlinedInput,
   Divider,
   Stack,
+  TextField,
+  Typography,
+  Autocomplete,
+  Grow,
+  Alert,
+  AlertTitle,
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 
 import { Layout } from "@components/Layout";
 
-import { CommunityInput } from "@shared/types";
+import { CommunityInput, Tag } from "@shared/types";
 
 import { addCommunity } from "@rest/community";
+import { AccessDenied } from "@components/AccessDenied";
+import { getTags } from "@rest/tags";
+import Link from "next/link";
 
 const Add: NextPage = () => {
   const [name, setName] = useState("");
@@ -26,37 +34,45 @@ const Add: NextPage = () => {
   const [rules, setRules] = useState("");
   const { status } = useSession();
 
+  const [tags, setTags] = useState<Array<Tag>>([]);
+  const [tagOptions, setTagOptions] = useState<Array<Tag>>([]);
+  const [uploadingState, setUploadingState] = useState<
+    "idle" | "loading" | "done" | "error"
+  >("idle");
+  const [communityId, setCommunityId] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    getTags()
+      .then((data) => setTagOptions(data))
+      .catch((e) => console.error(e));
+  }, []);
+
   if (status === "loading") {
     return <p>Loading...</p>;
   }
 
-  if (status === "unauthenticated") {
-    return (
-      <Layout>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <Image src="/authorization_required.svg" width={386} height={280} />
-          <p>
-            Пожалуйста, авторизуйтесь или зарегистрируйтесь для просмотра данной
-            страницы
-          </p>
-        </Box>
-      </Layout>
-    );
+  if (status !== "authenticated") {
+    return <AccessDenied />;
   }
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setUploadingState("loading");
     const community: CommunityInput = {
       name,
       summary,
       rules,
+      tags,
     };
-    console.log(community);
+    addCommunity(community)
+      .then((res) => {
+        setUploadingState("done");
+        setCommunityId(res._id);
+      })
+      .catch((e) => {
+        setUploadingState("error");
+        setError(e.response.data);
+      });
   };
   return (
     <Layout>
@@ -69,6 +85,35 @@ const Add: NextPage = () => {
           borderColor: "divider",
         }}
       >
+        {uploadingState !== "idle" && (
+          <Grow in={uploadingState === "done" || uploadingState === "error"}>
+            <Box>
+              {uploadingState === "done" && (
+                <Alert variant="filled" severity="success">
+                  <AlertTitle>Сообщество было успешно создано</AlertTitle>
+                  <Link href={`/communities/${communityId}`} passHref>
+                    <Typography
+                      sx={{
+                        "&:hover": {
+                          textDecoration: "underline",
+                          cursor: "pointer",
+                        },
+                      }}
+                    >
+                      Открыть
+                    </Typography>
+                  </Link>
+                </Alert>
+              )}
+              {uploadingState === "error" && (
+                <Alert variant="filled" severity="error">
+                  <AlertTitle>Ошибка</AlertTitle>
+                  {error}
+                </Alert>
+              )}
+            </Box>
+          </Grow>
+        )}
         <form onSubmit={handleSubmit}>
           <Stack sx={{ px: 3, py: 2, bgcolor: "background.paper" }} spacing={2}>
             <FormControl fullWidth variant="outlined">
@@ -101,7 +146,37 @@ const Add: NextPage = () => {
                 }
               />
             </FormControl>
+            <Box>
+              <Autocomplete
+                onChange={(event, value: Tag[]) => {
+                  event.stopPropagation();
+                  setTags(value);
+                }}
+                multiple
+                id="tags-filled"
+                options={tagOptions}
+                getOptionLabel={(option) => option.name}
+                renderTags={(value: Tag[], getTagProps) =>
+                  value.map((option: Tag) => (
+                    <Typography
+                      key={option._id}
+                      sx={{ px: 1.5, fontSize: "0.75rem" }}
+                    >
+                      {option.name}
+                    </Typography>
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    placeholder="Введите тэг"
+                  />
+                )}
+              />
+            </Box>
           </Stack>
+
           <Divider />
           <Box
             sx={{
@@ -120,7 +195,7 @@ const Add: NextPage = () => {
               color="secondary"
               endIcon={<Delete />}
               onClick={() => {
-                console.log({ summary, name, rules });
+                console.log({ summary, name, rules, tags });
               }}
             >
               Сохранить черновик

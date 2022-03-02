@@ -1,20 +1,11 @@
-import {
-  Avatar,
-  Box,
-  Button,
-  IconButton,
-  Typography,
-  Skeleton,
-  Divider,
-} from "@mui/material";
-import { formatDistanceToNow } from "date-fns";
+import { Box, Typography, Divider } from "@mui/material";
 
-import { DownvoteButton, UpvoteButton } from "@components/Buttons/VoteButtons";
 import { Comment as CommentType } from "@shared/types";
 import React, { useState } from "react";
-import { ru } from "date-fns/locale";
+
 import { CommentHead } from "./CommentHead";
 import { CommentForm } from "./CommentForm";
+import { CommentTreeLoading } from "./CommentTreeLoading";
 
 interface CommentProps {
   post_id: string;
@@ -22,6 +13,7 @@ interface CommentProps {
   comment: CommentType;
   comments?: CommentType[];
   onFetch?: (id: string) => void;
+  update: (id: string | undefined) => void;
 }
 
 export const Comment: React.FC<CommentProps> = ({
@@ -29,24 +21,40 @@ export const Comment: React.FC<CommentProps> = ({
   comment,
   comments,
   root_comment_id,
+
   onFetch = () => {},
+  update,
 }) => {
-  const { author_id, author, body, _id, rating, createdAt } = comment;
+  const { author, body, _id, rating, createdAt } = comment;
   const [responseOpen, setResponseOpen] = useState(false);
   const [threadOpen, setThreadOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const AddCommentHandler = (id: string | undefined) => {
+    setResponseOpen(false);
+    setThreadOpen(true);
+    update(id);
+  };
 
   const clickHandler = () => {
     setResponseOpen((prev) => !prev);
   };
   const openThreadHandler = async () => {
-    onFetch(root_comment_id as string);
+    setThreadOpen(true);
+    setLoading(true);
+    await onFetch(root_comment_id as string);
+    setLoading(false);
   };
-  console.log("comment render", body);
+
   return (
-    <Box onClick={() => console.log(comment)}>
-      <Box>
-        <CommentHead author={author} rating={rating} createdAt={createdAt} />
+    <Box>
+      <Box onClick={() => console.log(comment)}>
+        <CommentHead
+          comment_id={_id}
+          author={author}
+          rating={rating}
+          createdAt={createdAt}
+        />
         <Box sx={{ py: 1.5 }}>{body}</Box>
         <Box sx={{}}>
           <Typography
@@ -65,11 +73,11 @@ export const Comment: React.FC<CommentProps> = ({
             }}
           >
             {responseOpen ? "закрыть" : "ответить"}
-            {comments?.length || 0}
           </Typography>
         </Box>
         {responseOpen && (
           <CommentForm
+            onAdd={AddCommentHandler}
             post_id={post_id}
             outlined
             parent_comment_id={comment._id}
@@ -104,29 +112,30 @@ export const Comment: React.FC<CommentProps> = ({
             раскрыть ветку ({comment.children_count})
           </Typography>
         </Box>
+      ) : loading ? (
+        <>
+          <CommentTreeLoading />
+        </>
       ) : (
-        comments?.map((com, idx) => {
-          <Box sx={{ display: "flex" }}>
-            <Divider
-              onClick={() => setThreadOpen(false)}
-              orientation="vertical"
-              flexItem
-              sx={{ cursor: "pointer", mr: 2 }}
-            />
+        comments?.map((com) => {
+          return (
+            <Box sx={{ display: "flex" }} key={com._id}>
+              <Divider
+                onClick={() => setThreadOpen(false)}
+                orientation="vertical"
+                flexItem
+                sx={{ cursor: "pointer", mr: 2 }}
+              />
 
-            <Comment
-              post_id={post_id}
-              root_comment_id={root_comment_id}
-              key={com._id}
-              comment={com}
-              comments={com?.children}
-              // comments={
-              //   com?.children
-              //   // comments?.find((comment) => comment._id === com._id)?.children
-              // }
-              // comments={comments[idx]?.children}
-            />
-          </Box>;
+              <Comment
+                post_id={post_id}
+                root_comment_id={root_comment_id}
+                update={update}
+                comment={com}
+                comments={com?.children}
+              />
+            </Box>
+          );
         })
       )}
     </Box>

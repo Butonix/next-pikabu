@@ -1,10 +1,11 @@
-import { CommentInput } from "@shared/types";
+import { CommentInput, VotePayload, VotePostBody } from "@shared/types";
 import { CommentDocument } from "@shared/types/documents";
 import { createCommentTree } from "@shared/utils/createDataTree";
 import mongoose from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
 import { getToken } from "next-auth/jwt";
 import CommentService from "../services/CommentService";
+import PostService from "../services/PostService";
 
 const secret = process.env.SECRET;
 
@@ -13,15 +14,13 @@ class CommentController {
     const token = await getToken({ req, secret });
     const { body, post_id, parent_comment_id, root_comment_id }: CommentInput =
       req.body;
-    console.log(req.body);
+
     if (token === null) {
       res.status(401).json("Not Authorized");
       return;
     }
     const author = token.name as string;
 
-    // check if reply or root
-    // if reply then update children counter on parent and/or root comments
     if (parent_comment_id && root_comment_id) {
       try {
         await CommentService.incrementChildCounter(root_comment_id);
@@ -29,8 +28,18 @@ class CommentController {
           await CommentService.incrementChildCounter(parent_comment_id);
         }
       } catch (error) {
-        res.status(500).json("error updating child counter");
+        res
+          .status(500)
+          .json({ error, message: "error updating child counter" });
       }
+    }
+
+    try {
+      await PostService.incrementCommentCounter(post_id);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error, message: "error updating post comment-counter" });
     }
 
     try {
@@ -66,12 +75,11 @@ class CommentController {
     }
   }
 
-  async getForComment(req: NextApiRequest, res: NextApiResponse) {
+  async getCommentTree(req: NextApiRequest, res: NextApiResponse) {
     try {
-      const comments = await CommentService.getTreeOfComments(
+      const comments = await CommentService.getForComment(
         req.query.commentId as string
       );
-
       const tree = createCommentTree(comments);
       res.json(tree);
     } catch (e) {

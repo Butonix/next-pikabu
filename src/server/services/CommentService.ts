@@ -7,38 +7,20 @@ class CommentService {
       post_id: id,
       parent_comment_id: undefined,
     }).lean();
-
-    // console.log(comments);
     return comments;
   }
-  async getTreeOfComments(id: string) {
-    /** get thread of comments for root comment */
+  async getForComment(id: string) {
+    /** get flat thread of comments for root comment */
     const comments = await CommentModel.find({
       $or: [{ root_comment_id: id }, { _id: id }],
     }).lean();
-    // console.log(comments);
     return comments;
   }
   async create(comment: CommentDocument) {
     const createdComment = await CommentModel.create(comment);
     return createdComment;
   }
-  async incrementRatingCounter(id: string) {
-    const incrementedCounterDoc = await CommentModel.findByIdAndUpdate(
-      id,
-      { $inc: { rating: 1 } },
-      { timestamps: false }
-    );
-    return incrementedCounterDoc;
-  }
-  async decrementRatingCounter(id: string) {
-    const decrementedCounterDoc = await CommentModel.findByIdAndUpdate(
-      id,
-      { $inc: { rating: -1 } },
-      { timestamps: false }
-    );
-    return decrementedCounterDoc;
-  }
+
   async incrementChildCounter(id: string) {
     const incrementedCounterDoc = await CommentModel.findByIdAndUpdate(
       id,

@@ -1,4 +1,4 @@
-import { PostInput } from "@shared/types";
+import { Post, PostInput, VotePayload } from "@shared/types";
 
 import { api } from "./index";
 
@@ -17,9 +17,11 @@ export async function getPostById(id: string) {
 }
 
 export async function addPost(post: PostInput) {
-  const response = await api.post("/posts", post);
+  const response = await api.post<Post>("/posts", post);
+  return response.data;
+}
 
-  console.log(response, "from /api/post folder");
-
+export async function votePost(id: string, vote: VotePayload) {
+  const response = await api.post(`/vote/posts/${id}`, vote);
   return response;
 }

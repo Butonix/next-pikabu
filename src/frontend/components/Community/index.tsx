@@ -1,53 +1,68 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
+import { Tag } from "@shared/types";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
 interface CommuntyProps {
+  community_id: string;
   image: string;
   title: string;
-  postCount: number;
-  subCount: number;
+  total_posts: number;
+  total_users: number;
+  tags: Tag[];
 }
 
 export const CommunityCard: React.FC<CommuntyProps> = ({
+  community_id,
   image,
   title,
-  postCount,
-  subCount,
+  total_posts,
+  total_users,
+  tags,
 }) => {
-  const tags = ["Юмор", "Черный юмор", "Животные", "Картинка с текстом"];
+  // const tags = ["Юмор", "Черный юмор", "Животные", "Картинка с текстом"];
   return (
     <Box sx={{ display: "flex", gap: 1, height: 120 }}>
       <img src={image} width={105} height={105} />
       <Stack sx={{ position: "relative" }}>
-        <Typography variant="subtitle1" sx={{ fontSize: "1.125rem" }}>
-          {title}
-        </Typography>
+        <Link href={`/communities/${community_id}`}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontSize: "1.125rem",
+              cursor: "pointer",
+              "&:hover": { textDecoration: "underline" },
+            }}
+          >
+            {title}
+          </Typography>
+        </Link>
         <Typography variant="body2" color="text.secondary">
-          постов {postCount} • подписчиков {subCount}
+          постов {total_posts} • подписчиков {total_users}
         </Typography>
         <Box sx={{ mt: 1, display: "flex", gap: 1.5 }}>
           {tags.map((tag) => (
-            <Link key={tag} href="/">
-              <Typography
-                color="text.secondary"
-                variant="body2"
-                component="a"
-                sx={{
-                  transition: (theme) =>
-                    theme.transitions.create("all", {
-                      duration: theme.transitions.duration.standard,
-                    }),
-                  cursor: "pointer",
-                  "&:hover": {
-                    color: "text.primary",
-                  },
-                }}
-              >
-                {tag}
-              </Typography>
-            </Link>
+            // <Link key={tag} href="/">
+            <Typography
+              key={tag._id}
+              color="text.secondary"
+              variant="body2"
+              component="a"
+              sx={{
+                transition: (theme) =>
+                  theme.transitions.create("all", {
+                    duration: theme.transitions.duration.standard,
+                  }),
+                cursor: "pointer",
+                "&:hover": {
+                  color: "text.primary",
+                },
+              }}
+            >
+              {tag.name}
+            </Typography>
+            // </Link>
           ))}
         </Box>
 

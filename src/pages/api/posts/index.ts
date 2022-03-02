@@ -12,7 +12,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const handleCase: ResponseFuncs = {
     GET: PostController.getAll,
     POST: PostController.create,
-    PUT: PostController.update,
   };
 
   const response = handleCase[method];

@@ -1,12 +1,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import CommentController from "@src/server/controllers/CommentController";
+import { connect } from "@utils/dbConnect";
 import { ResponseFuncs } from "@shared/types";
+
+import PostController from "@src/server/controllers/PostController";
+
+connect();
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const method = req.method as keyof ResponseFuncs;
 
   const handleCase: ResponseFuncs = {
-    GET: CommentController.getForComment,
+    GET: PostController.getUserPostsById,
   };
 
   const response = handleCase[method];

@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 export interface ResponseFuncs {
   GET?: Function;
   POST?: Function;
@@ -16,18 +18,43 @@ export interface UserInput {
   password: string;
 }
 
-export interface User extends UserInput {
+// FIXME:
+// make types for followed
+
+interface RatedCommentType {
+  comment_id: string;
+  value: -1 | 1;
+  _id: string;
+}
+interface RatedPostType {
+  post_id: string;
+  value: -1 | 1;
+  _id: string;
+}
+export interface User {
+  email: string;
+  name: string;
   _id: string;
   rating?: number;
+  follower_count?: number;
   avatar?: string;
-  createdAt: string;
-  updatedAt: string;
+  rated_comments?: Array<RatedCommentType>;
+  rated_posts?: Array<RatedPostType>;
+  followed_people_ids?: Array<string>;
+  followed_community_ids?: Array<string>;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Tag {
+  _id: string;
+  name: string;
 }
 
 export interface PostInput {
   title: string;
   summary: string;
-  tag_ids: Array<string>;
+  tags: Array<Tag>;
   community_id?: string;
 }
 
@@ -35,28 +62,31 @@ export interface Post extends PostInput {
   _id: string;
   author_id: string;
   author: string;
-  rating?: number;
+  rating: number;
   total_comments: number;
   total_views: number;
   createdAt: string;
   updatedAt: string;
+  upvotes: number;
+  downvotes: number;
 }
 
 export interface CommunityInput {
   name: string;
   summary: string;
   rules?: string;
+  tags: Array<Tag>;
 }
 
 export interface Community extends CommunityInput {
   _id: string;
-  admin_id: number;
+  author_id: string;
+  author: string;
+  admin_ids: Array<number>;
   total_posts: number;
-  total_users: number;
-  // user_ids?: Types.Array<Types.ObjectId>;
-  // post_ids?: Types.Array<Types.ObjectId>;
-  users: Array<User>;
-  posts: Array<Post>;
+  total_followers: number;
+  // users: Array<User>;
+  // posts: Array<Post>;
 }
 
 export interface CommentInput {
@@ -74,5 +104,23 @@ export interface Comment extends CommentInput {
   createdAt: string;
   updatedAt: string;
   children_count?: number;
-  children?: Comment[];
+  children?: Array<Comment>;
+  upvotes: number;
+  downvotes: number;
+}
+
+export interface VoteCommentBody {
+  comment_id: string;
+  vote: 1 | 0 | -1;
+}
+export interface VotePostBody {
+  post_id: string;
+  vote: 1 | -1;
+}
+
+export interface VotePayload {
+  vote: 1 | -1;
+}
+export interface FollowPayload {
+  value: 1 | -1;
 }

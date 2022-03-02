@@ -5,16 +5,21 @@ import { Button, SxProps, Theme } from "@mui/material";
 interface ButtonProps {
   size?: "small" | "medium";
   sx?: SxProps<Theme>;
+  onClick?: () => void;
+  active?: boolean;
 }
 
 export const UpvoteButton: React.FC<ButtonProps> = ({
   size = "medium",
   sx,
+  onClick,
+  active = false,
 }) => {
   let k = 1;
   if (size === "small") k = 0.675;
   return (
     <Button
+      onClick={onClick}
       disableRipple
       sx={{
         width: 40 * k,
@@ -30,6 +35,11 @@ export const UpvoteButton: React.FC<ButtonProps> = ({
             duration: theme.transitions.duration.standard,
           }),
         ...sx,
+        ...(active
+          ? {
+              color: "primary.main",
+            }
+          : {}),
       }}
     >
       <ArrowDropUp
@@ -45,11 +55,14 @@ export const UpvoteButton: React.FC<ButtonProps> = ({
 export const DownvoteButton: React.FC<ButtonProps> = ({
   size = "medium",
   sx,
+  onClick,
+  active = false,
 }) => {
   let k = 1;
   if (size === "small") k = 0.675;
   return (
     <Button
+      onClick={onClick}
       disableRipple
       sx={{
         width: 20 * k,
@@ -65,6 +78,11 @@ export const DownvoteButton: React.FC<ButtonProps> = ({
             duration: theme.transitions.duration.standard,
           }),
         ...sx,
+        ...(active
+          ? {
+              color: "error.dark",
+            }
+          : {}),
       }}
     >
       <ArrowDropDown

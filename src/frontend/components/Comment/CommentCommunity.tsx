@@ -1,33 +1,69 @@
-import { Box, Button, Paper, Typography } from "@mui/material";
+import { Box, Button, Paper, Skeleton, Typography } from "@mui/material";
+import { getCommunityInfo } from "@rest/community";
+import { Community } from "@shared/types";
+import Image from "next/image";
+import Link from "next/link";
+import imgplaceholder from "public/placeholder-600x600.jpg";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 interface CommunityProps {
-  image: string;
-  name: string;
-  total_posts: number;
-  total_users: number;
+  community_id: string;
 }
 
 export const CommentCommunity: React.FC<CommunityProps> = ({
-  name,
-  total_posts,
-  total_users,
-  image,
+  community_id,
 }) => {
+  const [status, setStatus] = useState<"idle" | "loading" | "error" | "done">(
+    "idle"
+  );
+  const [community, setCommunity] = useState<Community>();
+  useEffect(() => {
+    setStatus("loading");
+    getCommunityInfo(community_id)
+      .then((data) => {
+        setCommunity(data);
+        setStatus("done");
+      })
+      .catch((e) => setStatus("error"));
+  }, []);
+  if (status === "loading")
+    return (
+      <Paper variant="outlined" sx={{ px: 3, py: 2, display: "flex" }}>
+        <Skeleton variant="rectangular" width={50} height={50} />
+        <Box sx={{ ml: 1 }}>
+          <Skeleton width={125} height={18} />
+          <Skeleton width={100} height={18} />
+        </Box>
+      </Paper>
+    );
   return (
-    <Paper variant="outlined" sx={{ px: 3, py: 2, display: "flex" }}>
-      <img src={image} alt={name} width={50} height={50} />
+    <Paper
+      variant="outlined"
+      sx={{ px: 3, py: 2, display: "flex" }}
+      onClick={() => {
+        console.log(community);
+      }}
+    >
+      <Image
+        src={imgplaceholder}
+        alt={community?.name}
+        width={50}
+        height={50}
+      />
       <Box sx={{ pl: 1 }}>
-        <Typography variant="subtitle2">{name}</Typography>
+        <Typography variant="subtitle2">{community?.name}</Typography>
         <Typography variant="caption" color="text.secondary">
-          постов {total_posts} • подписчиков {total_users}
+          постов {community?.total_posts} • подписчиков{" "}
+          {community?.total_followers}
         </Typography>
       </Box>
       <Box sx={{ ml: "auto" }}>
-        <Button variant="contained" size="medium">
-          Подписаться
-        </Button>
+        <Link href={`/communities/${community_id}`}>
+          <Button variant="contained" size="medium">
+            Перейти
+          </Button>
+        </Link>
       </Box>
     </Paper>
   );

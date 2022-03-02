@@ -1,5 +1,6 @@
 import { PostDocument } from "@shared/types/documents";
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { Schema, model, Model } from "mongoose";
+import { TagSchema } from "./tag.model";
 
 const PostSchema = new Schema<PostDocument>(
   {
@@ -22,19 +23,31 @@ const PostSchema = new Schema<PostDocument>(
     },
     rating: {
       type: Number,
-      required: true,
+      default: 0,
+    },
+
+    upvotes: {
+      type: Number,
+      default: 0,
+    },
+    downvotes: {
+      type: Number,
+      default: 0,
     },
 
     total_comments: {
       type: Number,
-      required: true,
+      default: 0,
     },
     total_views: {
       type: Number,
-      required: true,
+      default: 0,
     },
-    tag_ids: [{ type: Schema.Types.ObjectId, ref: "Tag", required: false }],
+    // tags: [TagSchema],
+    tags: [{ type: TagSchema }],
     community_id: { type: Schema.Types.ObjectId, ref: "Community" },
+    // upvoted_by: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    // downvoted_by: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

@@ -1,5 +1,6 @@
 import { Box, Button, Divider, Typography } from "@mui/material";
-import { User } from "next-auth";
+import { User } from "@shared/types";
+
 import { signOut } from "next-auth/react";
 import React from "react";
 
@@ -27,7 +28,7 @@ export const SidebarProfile: React.FC<SidebarProfileProps> = ({ user }) => {
           <Typography
             sx={{ fontSize: 20, fontWeight: 500, display: "inline", mr: 1 }}
           >
-            100
+            {user.rating}
           </Typography>
           <Typography
             sx={{ display: "inline", color: "grey.700", fontSize: 14 }}

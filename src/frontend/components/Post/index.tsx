@@ -1,19 +1,36 @@
 import React from "react";
-import Link from "next/link";
 
-import { Box, Collapse, Divider, Paper, Typography } from "@mui/material";
+import { Session } from "next-auth";
+
+import { Box, Collapse, Divider, Paper } from "@mui/material";
 
 import { PostHeader } from "./PostHeader";
 import { PostFooter } from "./PostFooter";
-import { Post as PostType, PostInput } from "@shared/types";
 import { PostSide } from "./PostSide";
-import { formatDistance, formatDistanceToNow, subDays } from "date-fns";
+import { Post as PostType } from "@shared/types";
+import { TagList } from "@components/Tag";
 
 interface PostProps {
   post: PostType;
 }
 
 export const Post: React.FC<PostProps> = ({ post }) => {
+  const {
+    _id,
+    author,
+    author_id,
+    createdAt,
+    summary,
+    tags,
+    title,
+    total_comments,
+    total_views,
+    updatedAt,
+    community_id,
+    downvotes,
+    rating,
+    upvotes,
+  } = post;
   const [isOpen, setIsOpen] = React.useState(true);
   const toggleState = () => {
     setIsOpen((prev) => !prev);
@@ -22,24 +39,23 @@ export const Post: React.FC<PostProps> = ({ post }) => {
     <>
       <Paper variant="outlined" sx={{ position: "relative" }}>
         <PostSide
-          ratingCount={post.rating || 0}
+          post_id={_id}
+          rating={rating}
           onToggle={toggleState}
           isOpen={isOpen}
         />
-        <Box sx={{ py: 2, px: 3 }} onClick={() => console.log()}>
+        <Box sx={{ py: 2, px: 3 }} onClick={() => console.log(post)}>
           <PostHeader
-            postId={post._id}
-            title={post.title}
-            userId={post.author}
-            createdAt={post.createdAt}
+            community_id={community_id}
+            postId={_id}
+            title={title}
+            userId={author}
+            createdAt={createdAt}
           />
 
           <Collapse in={isOpen}>
-            {/* <Typography>{post.summary}</Typography> */}
             <Box
               sx={{
-                // overflow: "hidden",
-
                 img: {
                   maxWidth: "100%",
                 },
@@ -48,33 +64,30 @@ export const Post: React.FC<PostProps> = ({ post }) => {
             ></Box>
           </Collapse>
         </Box>
-        <Box sx={{ px: 3, pb: 2, display: "flex", gap: 2 }}>
-          Lorem ipsum dolor sit amet consectetur, adipisicing elit. Illum, ab?
-          {/* {tags.map((tag) => (
-            <Link key={tag} href="/">
-              <Typography
-                color="text.secondary"
-                variant="body2"
-                component="a"
-                sx={{
-                  transition: (theme) =>
-                    theme.transitions.create("all", {
-                      duration: theme.transitions.duration.standard,
-                    }),
-                  cursor: "pointer",
-                  "&:hover": {
-                    color: "text.primary",
-                  },
-                }}
-              >
-                {tag}
-              </Typography>
-            </Link>
-          ))} */}
-        </Box>
+        <TagList tags={tags} />
         <Divider />
-        <PostFooter commentsCount={0} viewsCount={0} />
+        <PostFooter commentsCount={total_comments} viewsCount={total_views} />
       </Paper>
     </>
+  );
+};
+
+interface PostListProps {
+  posts: PostType[];
+}
+export const PostList: React.FC<PostListProps> = ({ posts }) => {
+  if (posts.length === 0) {
+    return (
+      <Paper sx={{ px: 3, py: 2 }} variant="outlined">
+        Здесь пока что нет ни одного поста
+      </Paper>
+    );
+  }
+  return (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      {posts?.map((post) => (
+        <Post key={post._id} post={post} />
+      ))}
+    </Box>
   );
 };

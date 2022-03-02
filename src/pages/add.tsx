@@ -1,14 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import dynamic from "next/dynamic";
 import { NextPage } from "next";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
 
+import LoadingButton from "@mui/lab/LoadingButton";
 import {
   Autocomplete,
+  Alert,
+  AlertTitle,
   Box,
   Button,
+  Grow,
   FormControl,
   OutlinedInput,
   TextField,
@@ -19,60 +23,103 @@ import { Delete } from "@mui/icons-material";
 import { Layout } from "@components/Layout";
 import { InputWithEditorProps } from "@components/Forms/InputWithEditor";
 
-import { PostInput } from "@shared/types";
+import { Community, PostInput, Tag } from "@shared/types";
 import { addPost } from "@rest/post";
+import { AccessDenied } from "@components/AccessDenied";
+import { getTags } from "@rest/tags";
+import { getCommunities } from "@rest/community";
 
 const InputWithEditor = dynamic<InputWithEditorProps>(
-  import("@components/Forms").then((mod) => mod.InputWithEditor),
+  () => import("@components/Forms").then((mod) => mod.InputWithEditor),
   { ssr: false }
 );
 
 const Add: NextPage = () => {
   const { status } = useSession();
 
+  const [tags, setTags] = useState<Array<Tag>>([]);
+  const [tagOptions, setTagOptions] = useState<Array<Tag>>([]);
+  const [title, setTitle] = useState("");
+  const [summary, setSummary] = useState("");
+  const [uploadingState, setUploadingState] = useState<
+    "idle" | "loading" | "done" | "error"
+  >("idle");
+  const [postId, setPostId] = useState("");
+  const [error, setError] = useState("");
+  const [communityId, setCommunityId] = useState<string>();
+  const [communityOptions, setCommunityOptions] = useState<Array<Community>>(
+    []
+  );
+
+  useEffect(() => {
+    getTags()
+      .then((data) => setTagOptions(data))
+      .catch((e) => console.error(e));
+  }, []);
+
+  useEffect(() => {
+    getCommunities()
+      .then((data) => setCommunityOptions(data))
+      .catch((e) => console.error(e));
+  }, []);
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setUploadingState("loading");
+    const post: PostInput = {
+      title,
+      summary,
+      tags,
+      community_id: communityId,
+    };
+
+    addPost(post)
+      .then((res) => {
+        setUploadingState("done");
+        setPostId(res._id);
+      })
+      .catch((e) => {
+        setUploadingState("error");
+        setError(e.response.data);
+      });
+  };
   if (status === "loading") {
     return <p>Loading...</p>;
   }
 
-  if (status === "unauthenticated") {
-    return (
-      <Layout>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <Image src="/authorization_required.svg" width={386} height={280} />
-          <p>
-            Пожалуйста, авторизуйтесь или зарегистрируйтесь для просмотра данной
-            страницы
-          </p>
-        </Box>
-      </Layout>
-    );
+  if (status !== "authenticated") {
+    return <AccessDenied />;
   }
-
-  const [tags, setTags] = useState<Array<Tag>>([]);
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const post: PostInput = {
-      title,
-      summary,
-      tag_ids: ["1"],
-      // tags,
-    };
-
-    addPost(post).then((res) => console.log(res));
-  };
   return (
     <Layout>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <Grow in={uploadingState === "done" || uploadingState === "error"}>
+          <Box>
+            {uploadingState === "done" && (
+              <Alert variant="filled" severity="success">
+                <AlertTitle>Пост был успешно добавлен</AlertTitle>
+                <Link href={`/posts/${postId}`} passHref>
+                  <Typography
+                    sx={{
+                      "&:hover": {
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                      },
+                    }}
+                  >
+                    Открыть
+                  </Typography>
+                </Link>
+              </Alert>
+            )}
+            {uploadingState === "error" && (
+              <Alert variant="filled" severity="error">
+                <AlertTitle>Ошибка</AlertTitle>
+                {error}
+              </Alert>
+            )}
+          </Box>
+        </Grow>
         <form onSubmit={handleSubmit}>
           <FormControl fullWidth variant="outlined">
             <OutlinedInput
@@ -100,15 +147,15 @@ const Add: NextPage = () => {
               }}
               multiple
               id="tags-filled"
-              options={tagsOptions}
-              getOptionLabel={(option) => option.title}
+              options={tagOptions}
+              getOptionLabel={(option) => option.name}
               renderTags={(value: Tag[], getTagProps) =>
                 value.map((option: Tag) => (
                   <Typography
-                    key={option.id}
+                    key={option._id}
                     sx={{ px: 1.5, fontSize: "0.75rem" }}
                   >
-                    {option.title}
+                    {option.name}
                   </Typography>
                 ))
               }
@@ -116,25 +163,39 @@ const Add: NextPage = () => {
                 <TextField
                   {...params}
                   variant="outlined"
-                  placeholder="Favorites"
+                  placeholder="Введите название тэга"
                 />
               )}
             />
           </Box>
-          {/* <Box sx={{ px: 3, py: 2, bgcolor: "background.paper" }}>
+          <Box sx={{ px: 3, py: 2, bgcolor: "background.paper" }}>
             <Autocomplete
+              onChange={(event, value) => {
+                event.stopPropagation();
+                setCommunityId(value?._id);
+              }}
               id="community"
-              options={tagsOptions.map((option) => option.title)}
-              freeSolo
+              options={communityOptions}
+              getOptionLabel={(option) => option.name}
+              renderTags={(value: Community[], getTagProps) =>
+                value.map((option: Community) => (
+                  <Typography
+                    key={option._id}
+                    sx={{ px: 1.5, fontSize: "0.75rem" }}
+                  >
+                    {option.name}
+                  </Typography>
+                ))
+              }
               renderInput={(params) => (
                 <TextField
                   {...params}
                   variant="outlined"
-                  placeholder="Favorites"
+                  placeholder="Введите название сообщества (Необязательно)"
                 />
               )}
             />
-          </Box> */}
+          </Box>
 
           <Box
             sx={{
@@ -147,19 +208,25 @@ const Add: NextPage = () => {
               borderColor: "divider",
             }}
           >
-            <Button type="submit" variant="contained">
+            <LoadingButton
+              loading={uploadingState === "loading"}
+              loadingIndicator="Загружаю..."
+              type="submit"
+              variant="contained"
+            >
               Добавить пост
-            </Button>
-            <Button
+            </LoadingButton>
+            <LoadingButton
+              loading={uploadingState === "loading"}
               variant="contained"
               color="secondary"
               endIcon={<Delete />}
               onClick={() => {
-                console.log(summary);
+                console.log(communityId);
               }}
             >
               Сохранить черновик
-            </Button>
+            </LoadingButton>
           </Box>
         </form>
       </Box>
@@ -168,14 +235,3 @@ const Add: NextPage = () => {
 };
 
 export default Add;
-
-interface Tag {
-  title: string;
-  id: number;
-}
-
-const tagsOptions: Array<Tag> = [
-  { title: "Lorem", id: 1 },
-  { title: "Ipsum", id: 2 },
-  { title: "dolorem", id: 3 },
-];

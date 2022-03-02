@@ -46,8 +46,7 @@ export const InputWithEditor: React.FC<InputWithEditorProps> = ({
     "link",
     "image",
   ];
-  // console.log(theme.palette.primary.main);
-  // const [editorState, setEditorState] = React.useState<any>();
+
   return (
     <Box
       id="editor"
@@ -60,12 +59,14 @@ export const InputWithEditor: React.FC<InputWithEditorProps> = ({
         borderColor: "divider",
         color: "white",
         ".quill": {
-          ".ql-picker-label": { color: "white" },
-
-          ".ql-snow .ql-stroke": {
-            stroke: "white",
+          color: "text.primary",
+          ".ql-picker-label": { color: "text.primary" },
+          ".ql-snow .ql-stroke ": {
+            stroke: theme.palette.text.primary,
           },
-          color: "white",
+          ".ql-snow .ql-fill ": {
+            stroke: theme.palette.text.primary,
+          },
           ".ql-toolbar": {
             border: 1,
             borderColor: "divider",

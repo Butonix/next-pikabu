@@ -1,9 +1,17 @@
 import { MoreHoriz } from "@mui/icons-material";
-import { Avatar, Box, Button, Tooltip, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  Skeleton,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
 import Link from "next/link";
 import React from "react";
+import { CommunityBadge } from "./CommunityBadge";
 const tooltipProps = {
   tooltip: {
     sx: {
@@ -20,6 +28,7 @@ const tooltipProps = {
 };
 
 interface PostHeaderProps {
+  community_id?: string;
   title: string;
   createdAt: string;
   userId: string;
@@ -27,6 +36,7 @@ interface PostHeaderProps {
 }
 
 export const PostHeader: React.FC<PostHeaderProps> = ({
+  community_id,
   title,
   createdAt,
   userId,
@@ -45,7 +55,14 @@ export const PostHeader: React.FC<PostHeaderProps> = ({
         <Avatar sx={{ height: 20, width: 20 }}>A</Avatar>
         <Link href={`/`}>
           <Typography
-            sx={{ cursor: "pointer", fontSize: 14, fontWeight: 500 }}
+            sx={{
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 500,
+              "&:hover": {
+                textDecoration: "underline",
+              },
+            }}
             component="a"
           >
             {userId}
@@ -55,6 +72,7 @@ export const PostHeader: React.FC<PostHeaderProps> = ({
         <Typography color="text.secondary" sx={{ fontSize: 14 }}>
           {formatDistanceToNow(new Date(createdAt), { locale: ru })} назад
         </Typography>
+        {community_id && <CommunityBadge community_id={community_id} />}
         <Box sx={{ position: "absolute", top: 0, right: 0 }}>
           <Tooltip
             componentsProps={tooltipProps}

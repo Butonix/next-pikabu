@@ -3,29 +3,20 @@ import type { GetServerSideProps, NextPage } from "next";
 import { Box, Button } from "@mui/material";
 import { Filters } from "@components/Filters";
 import { Layout } from "@components/Layout";
-import { Post as PostComponent } from "@components/Post";
+import { PostList } from "@components/Post";
 
 import { getPosts } from "@rest/post";
 import { Post } from "@shared/types";
+import { useSession } from "next-auth/react";
 
 interface HomeProps {
   posts: Post[];
 }
 
 const Home: NextPage<HomeProps> = ({ posts }) => {
-  const clickHandler = async () => {
-    const res = await getPosts();
-    console.log(res);
-  };
   return (
     <Layout>
-      <Filters />
-      <Button onClick={clickHandler}>fetchPostsAndLog</Button>
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        {posts?.map((post) => (
-          <PostComponent key={post._id} post={post} />
-        ))}
-      </Box>
+      <PostList posts={posts} />
     </Layout>
   );
 };

@@ -2,6 +2,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 import { hashPassword } from "@shared/utils/auth";
 import UserService from "../services/UserService";
+import { getToken } from "next-auth/jwt";
+
+const secret = process.env.SECRET;
 
 class UserController {
   async create(req: NextApiRequest, res: NextApiResponse) {
@@ -17,11 +20,11 @@ class UserController {
       const checkExistingName = await UserService.findByEmail(name);
 
       if (checkExistingEmail) {
-        res.status(422).json({ message: "Email already exists" });
+        res.status(422).json({ message: "email уже используется в системе" });
         return;
       }
       if (checkExistingName) {
-        res.status(422).json({ message: "Username already exists" });
+        res.status(422).json({ message: "логин уже занят" });
         return;
       }
       const hashedPassword = hashPassword(password);
@@ -54,12 +57,27 @@ class UserController {
 
     try {
       const user = await UserService.getOneByName(name);
-      // res.json({ message: "user found" });
-      if (!user) res.status(404).json("Not found");
-      const body = { ...user._doc, password: undefined };
-      console.log(body);
 
-      res.json(body);
+      if (!user) res.status(404).json("Not found");
+
+      res.json({ ...user?.toObject(), password: undefined });
+    } catch (e) {
+      res.status(500).json(e);
+    }
+  }
+
+  async followCommunity(req: NextApiRequest, res: NextApiResponse) {
+    const communityId = req.query.communityId as string;
+    const token = await getToken({ req, secret });
+    if (token === null) {
+      res.status(401).json("Not Authorized");
+      return;
+    }
+    const userId = token.id;
+    try {
+      await UserService.followCommunity(userId, communityId);
+
+      res.json(`now following community: id: ${communityId}`);
     } catch (e) {
       res.status(500).json(e);
     }

@@ -7,6 +7,7 @@ interface SectionHeaderProps {
   avatar?: ReactNode;
   bgimage?: string;
   children?: ReactNode;
+  name?: string;
 }
 
 export const SectionHeader: React.FC<SectionHeaderProps> = ({
@@ -14,6 +15,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   avatar,
   children,
   bgimage,
+  name,
 }) => {
   return (
     <Paper variant="outlined">
@@ -43,9 +45,10 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
       <Divider />
       <Box sx={{ mx: 3, mt: 2, pt: 6, position: "relative" }}>
         <Typography variant="h5" component="h1">
-          vasya22
+          {name}
         </Typography>
         <Box sx={{ position: "absolute", right: 0, top: 0 }}>{actions}</Box>
+        <Divider sx={{ pt: 2 }} />
       </Box>
       <Box sx={{ px: 3, py: 2 }}>{children}</Box>
     </Paper>

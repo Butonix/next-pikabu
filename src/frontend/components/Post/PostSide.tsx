@@ -1,44 +1,51 @@
-import React from "react";
+import React, { useState } from "react";
 
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button } from "@mui/material";
 
 import { Add, Remove } from "@mui/icons-material";
-import { DownvoteButton, UpvoteButton } from "@components/Buttons/VoteButtons";
+
+import { AuthModal } from "@components/AuthModal";
+
+import { PostRating } from "@components/Rating/PostRating";
 
 interface PostSideProps {
-  ratingCount: number;
+  post_id: string;
+  rating: number;
   isOpen: boolean;
   onToggle: () => void;
 }
 
 export const PostSide: React.FC<PostSideProps> = ({
-  ratingCount,
+  post_id,
+  rating,
   isOpen,
+
   onToggle,
 }) => {
+  const [open, setOpen] = useState(false);
+  const toggleModal = () => {
+    setOpen((prevSt) => !prevSt);
+  };
+
   return (
-    <Box
-      sx={{
-        position: "absolute",
-        left: -80,
-        top: 0,
-        width: 70,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <>
+      <AuthModal open={open} onClick={toggleModal} />
       <Box
         sx={{
+          position: "absolute",
+          left: -80,
+          top: 0,
+          width: 70,
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
         }}
       >
-        <UpvoteButton />
-        <Typography align="center" color="text.secondary">
-          {ratingCount}
-        </Typography>
-        <DownvoteButton />
+        <PostRating
+          post_id={post_id}
+          rating={rating}
+          onUnauthAction={toggleModal}
+        />
+
         <Button
           onClick={onToggle}
           sx={{
@@ -56,6 +63,6 @@ export const PostSide: React.FC<PostSideProps> = ({
           {isOpen ? <Remove /> : <Add />}
         </Button>
       </Box>
-    </Box>
+    </>
   );
 };

@@ -63,6 +63,10 @@ export const SidebarRegisterForm: React.FC<SidebarRegisterFormProps> = ({
   });
   const { ref: nameRef, ...nameProps } = register("name", {
     required: "Поле обязательно",
+    pattern: {
+      value: /[a-zA-Z0-9]$/,
+      message: "Имя пользователя должно состоять только из A-Z и 0-9",
+    },
     minLength: {
       value: 5,
       message: "Минимум 5 символов",

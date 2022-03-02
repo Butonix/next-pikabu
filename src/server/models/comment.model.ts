@@ -25,6 +25,16 @@ const CommentSchema = new Schema<CommentDocument>(
       type: Number,
       default: 0,
     },
+
+    upvotes: {
+      type: Number,
+      default: 0,
+    },
+    downvotes: {
+      type: Number,
+      default: 0,
+    },
+
     children_count: { type: Number, default: 0 },
     parent_comment_id: {
       type: Schema.Types.ObjectId,
@@ -36,6 +46,8 @@ const CommentSchema = new Schema<CommentDocument>(
       required: false,
       ref: "Comment",
     },
+    // upvoted_by: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    // downvoted_by: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

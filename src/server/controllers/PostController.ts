@@ -2,10 +2,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 import PostService from "../services/PostService";
 
 import { getToken } from "next-auth/jwt";
-import { PostDocument } from "@shared/types/documents";
-import { PostInput } from "@shared/types";
 
-import mongoose from "mongoose";
+import { PostInput, VotePayload } from "@shared/types";
+
 const secret = process.env.SECRET;
 
 class PostController {
@@ -29,28 +28,14 @@ class PostController {
 
   async create(req: NextApiRequest, res: NextApiResponse) {
     const token = await getToken({ req, secret });
-    const { summary, title, community_id, tag_ids }: PostInput = req.body;
-    const tagIdArr = tag_ids?.map((tag) => new mongoose.Types.ObjectId(tag));
-
     if (!token) {
       res.status(401).json("Not Authorized");
       return;
     }
-    // Signed in
-    // console.log("JSON Web Token start", token, "JSON Web Token end");
     try {
-      const post: PostDocument = {
-        author_id: new mongoose.Types.ObjectId(token.id),
-        author: token.name as string,
-        title,
-        summary,
-        rating: 0,
-        total_comments: 0,
-        total_views: 0,
-        tag_ids: new mongoose.Types.Array(...tagIdArr),
-        community_id: new mongoose.Types.ObjectId(community_id),
-      };
-      const createdPost = await PostService.create(post);
+      const userInput: PostInput = req.body;
+      const user = { author: token.name as string, author_id: token.id };
+      const createdPost = await PostService.create(userInput, user);
       res.json(createdPost);
     } catch (e) {
       res.status(500).json(e);
@@ -61,6 +46,34 @@ class PostController {
     try {
       const post = await PostService.update(req.body);
       res.json(post);
+    } catch (e) {
+      res.status(500).json(e);
+    }
+  }
+
+  async getCommmunityPosts(req: NextApiRequest, res: NextApiResponse) {
+    const communityId = req.query.communityId as string;
+    try {
+      const posts = await PostService.getAllCommunityPosts(communityId);
+      res.json(posts);
+    } catch (e) {
+      res.status(500).json(e);
+    }
+  }
+  async getUserPostsById(req: NextApiRequest, res: NextApiResponse) {
+    const userId = req.query.userId as string;
+    try {
+      const posts = await PostService.getAllUserPostsById(userId);
+      res.json(posts);
+    } catch (e) {
+      res.status(500).json(e);
+    }
+  }
+  async getUserPostsByName(req: NextApiRequest, res: NextApiResponse) {
+    const username = req.query.username as string;
+    try {
+      const posts = await PostService.getAllUserPostsByName(username);
+      res.json(posts);
     } catch (e) {
       res.status(500).json(e);
     }

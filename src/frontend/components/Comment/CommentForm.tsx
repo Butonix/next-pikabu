@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { Box, Button, Divider, Input } from "@mui/material";
 import { addComment } from "@rest/comment";
-import { CommentInput } from "@shared/types";
+import { CommentInput, Comment } from "@shared/types";
+import { LoadingButton } from "@mui/lab";
 
 interface CommentFormProps {
   post_id: string;
   parent_comment_id?: string;
   root_comment_id?: string;
   outlined?: boolean;
+
+  onAdd: (id: string | undefined) => void;
 }
 
 export const CommentForm: React.FC<CommentFormProps> = ({
@@ -15,18 +18,25 @@ export const CommentForm: React.FC<CommentFormProps> = ({
   parent_comment_id,
   root_comment_id,
   outlined = false,
+
+  onAdd,
 }) => {
   const [body, setBody] = useState("");
+  const [loading, setLoading] = useState(false);
   const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
     const comment: CommentInput = {
       post_id,
       parent_comment_id,
       root_comment_id,
       body,
     };
-    addComment(comment);
-    // console.log(comment);
+    addComment(comment).then((res) => {
+      setLoading(false);
+      onAdd(root_comment_id);
+    });
+    setBody("");
   };
   return (
     <Box
@@ -52,9 +62,14 @@ export const CommentForm: React.FC<CommentFormProps> = ({
           display: "flex",
         }}
       >
-        <Button type="submit" size="small" variant="contained">
+        <LoadingButton
+          loading={loading}
+          type="submit"
+          size="small"
+          variant="contained"
+        >
           Отправить
-        </Button>
+        </LoadingButton>
       </Box>
     </Box>
   );

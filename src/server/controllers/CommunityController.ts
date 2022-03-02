@@ -2,10 +2,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 import CommunityService from "../services/CommunityService";
 
 import { getToken } from "next-auth/jwt";
-import { CommunityDocument } from "@shared/types/documents";
 import { CommunityInput } from "@shared/types";
 
-import mongoose from "mongoose";
 const secret = process.env.SECRET;
 
 class CommunityController {
@@ -29,29 +27,19 @@ class CommunityController {
 
   async create(req: NextApiRequest, res: NextApiResponse) {
     const token = await getToken({ req, secret });
-    const { name, summary, rules }: CommunityInput = req.body;
-    if (token) {
-      // Signed in
-      // console.log("JSON Web Token start", token, "JSON Web Token end");
-      try {
-        const community: CommunityDocument = {
-          name,
-          summary,
-          rules,
-          admin_id: new mongoose.Types.ObjectId(token.id as string),
-          total_posts: 0,
-          total_users: 0,
-        };
-        const createdCommunity = await CommunityService.create(community);
-        res.json(createdCommunity);
-      } catch (e) {
-        res.status(500).json(e);
-      }
-    } else {
+    if (!token) {
       // Not Signed in
       res.status(401).json("Not Authorized");
+      return;
     }
-    const userData = { ...token };
+    try {
+      const userInput: CommunityInput = req.body;
+      const user = { author: token.name as string, author_id: token.id };
+      const createdCommunity = await CommunityService.create(userInput, user);
+      res.json(createdCommunity);
+    } catch (e) {
+      res.status(500).json(e);
+    }
   }
 }
 

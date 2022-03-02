@@ -1,13 +1,18 @@
 import { CommunityDocument } from "@shared/types/documents";
 import mongoose, { Schema, model } from "mongoose";
+import { TagSchema } from "./tag.model";
 
 const CommunitySchema = new Schema<CommunityDocument>(
   {
-    admin_id: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      ref: "User",
-    },
+    author_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    author: { type: String, required: true },
+    admin_ids: [
+      {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "User",
+      },
+    ],
     name: {
       type: String,
       required: true,
@@ -16,20 +21,9 @@ const CommunitySchema = new Schema<CommunityDocument>(
       type: String,
       required: true,
     },
-    total_posts: { type: Number, required: true },
-    total_users: { type: Number, required: true },
-    // post_ids: [
-    //   {
-    //     type: Schema.Types.ObjectId,
-    //     ref: "Post",
-    //   },
-    // ],
-    // user_ids: [
-    //   {
-    //     type: Schema.Types.ObjectId,
-    //     ref: "User",
-    //   },
-    // ],
+    total_posts: { type: Number, default: 0 },
+    total_followers: { type: Number, default: 0 },
+    tags: [{ type: TagSchema }],
     rules: { type: String, required: true },
   },
   { timestamps: true }

@@ -8,6 +8,7 @@ import { verifyPassword } from "@utils/auth";
 import { connect } from "@utils/dbConnect";
 import { UserModel } from "@src/server/models/user.model";
 import clientPromse from "@shared/utils/mongodb";
+import { User } from "@shared/types";
 
 connect();
 
@@ -71,7 +72,10 @@ export default NextAuth({
     },
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.id as string;
+        const response: unknown = await UserModel.findById(token.id).lean();
+        const user: User = response as User;
+        if (!user) return session;
+        session.user = user;
       }
       return session;
     },

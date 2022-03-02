@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NextPage } from "next";
+import { GetServerSideProps, NextPage } from "next";
 
 import { Layout } from "@components/Layout";
 import {
@@ -13,8 +13,14 @@ import {
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { CommunityCard } from "@components/Community";
+import { getCommunities } from "@rest/community";
+import { Community } from "@shared/types";
 
-const Communities: NextPage = () => {
+interface CommunitiesPageProps {
+  communities: Community[];
+}
+
+const CommunitiesPage: NextPage<CommunitiesPageProps> = ({ communities }) => {
   const [searchValue, setSearchValue] = useState("");
 
   return (
@@ -75,24 +81,17 @@ const Communities: NextPage = () => {
           }}
         >
           <Stack spacing={2}>
-            <CommunityCard
-              image={"https://picsum.photos/200/200"}
-              title="Сообщество"
-              postCount={1}
-              subCount={10}
-            />
-            <CommunityCard
-              image={"https://picsum.photos/200/205"}
-              title="Сообщество"
-              postCount={1}
-              subCount={10}
-            />
-            <CommunityCard
-              image={"https://picsum.photos/205/200"}
-              title="Сообщество"
-              postCount={1}
-              subCount={10}
-            />
+            {communities.map((comm) => (
+              <CommunityCard
+                key={comm._id}
+                community_id={comm._id}
+                image={"https://picsum.photos/200/200"}
+                title={comm.name}
+                tags={comm.tags}
+                total_posts={comm.total_posts}
+                total_users={comm.total_followers}
+              />
+            ))}
           </Stack>
         </Paper>
       </Box>
@@ -100,4 +99,14 @@ const Communities: NextPage = () => {
   );
 };
 
-export default Communities;
+export default CommunitiesPage;
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const communities = await getCommunities();
+
+  return {
+    props: {
+      communities: communities,
+    },
+  };
+};

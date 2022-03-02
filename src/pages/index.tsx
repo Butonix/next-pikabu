@@ -1,13 +1,10 @@
 import type { GetServerSideProps, NextPage } from "next";
 
-import { Box, Button } from "@mui/material";
-import { Filters } from "@components/Filters";
 import { Layout } from "@components/Layout";
 import { PostList } from "@components/Post";
 
 import { getPosts } from "@rest/post";
 import { Post } from "@shared/types";
-import { useSession } from "next-auth/react";
 
 interface HomeProps {
   posts: Post[];

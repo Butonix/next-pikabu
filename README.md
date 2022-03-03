@@ -3,6 +3,10 @@
 # View demo
 https://pikabu-nextjs.herokuapp.com/
 
+demo user:
+- user: user@demo.com
+- password: demopw
+
 ## Stack
 
 ### client

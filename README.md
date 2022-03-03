@@ -1,5 +1,8 @@
 # NextJS Pikabu-clone
 
+# View demo
+https://pikabu-nextjs.herokuapp.com/
+
 ## Stack
 
 ### client

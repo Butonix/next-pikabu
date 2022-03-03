@@ -39,6 +39,11 @@
 
 # TODO:
 
+### Issues
+- Error handling client-side
+- limit 1mb per post document
+- images, not links, are saved directly to the post document, which leads to bigger document size and slower page loading
+
 ### frontend
 - Error handling client-side
 - Image upload to server
